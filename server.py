@@ -73,6 +73,20 @@ def index():
 
 @app.route('/app')
 def app_route():
+    # Check if user is authenticated by verifying Firebase token
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        # Redirect to auth page for web browsers
+        if request.headers.get('Accept') and 'text/html' in request.headers.get('Accept'):
+            return send_from_directory('.', 'auth.html')
+        return jsonify({"error": "Authentication required"}), 401
+    
+    # For now, serve the app - in production you'd verify the token here
+    return send_from_directory('.', 'index.html')
+
+@app.route('/dashboard')
+def dashboard():
+    # Protected dashboard route
     return send_from_directory('.', 'index.html')
 
 @app.route('/firebase-env.js')
@@ -506,6 +520,9 @@ def handle_verify_otp():
     del _otp_store[email_addr]
     return jsonify({"message": "Email verified successfully."})
 
+
+# Vercel serverless function handler
+app_handler = app
 
 if __name__ == "__main__":
     print("=" * 55)

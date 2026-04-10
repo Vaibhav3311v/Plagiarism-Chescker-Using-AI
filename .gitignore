@@ -6,6 +6,7 @@
 # Firebase service account keys
 serviceAccountKey.json
 *.json
+!vercel.json
 
 # Python cache and artifacts
 __pycache__/

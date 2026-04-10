@@ -1,0 +1,42 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/firebase-env.js",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/auth.html",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/app",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/dashboard",
+      "dest": "/server.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.py"
+    }
+  ],
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  }
+}
