@@ -69,6 +69,10 @@ ALLOWED_EXTENSIONS = {'.html', '.js', '.css', '.png', '.jpg', '.webp', '.svg'}
 
 @app.route('/')
 def index():
+    return send_from_directory('.', 'landing.html')
+
+@app.route('/app')
+def app_route():
     return send_from_directory('.', 'index.html')
 
 @app.route('/firebase-env.js')
