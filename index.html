@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Veritas AI – Detect copied and AI-generated content instantly using real Groq AI analysis." />
+  <title>Veritas AI | Plagiarism Checker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- PDF.js for PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- Mammoth.js for DOCX text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Neural Background & Cursor Glow -->
+  <div id="cursor-glow"></div>
+  <div class="neural-bg"></div>
+
+  <!-- Ambient Background Blobs (Kept for depth) -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+
+  <div class="app-container">
+
+    <!-- ── Header ── -->
+    <header class="app-header glass-panel sticky-header">
+      <span id="api-status" class="status-dot status-offline">● Connecting...</span>
+      <div class="logo logo-animated">
+        <i data-lucide="activity" class="logo-icon"></i>
+        <h1>Veritas <span class="accent-text">AI</span></h1>
+      </div>
+      <div class="header-spacer"></div>
+      
+      <div class="user-controls">
+        <span class="user-profile">
+          <i data-lucide="user" class="icon-sm"></i>
+          <span id="user-profile-name">Terminal User</span>
+        </span>
+        <button class="btn btn-ghost" id="history-btn" title="Scan History">
+          <i data-lucide="clock" class="icon-sm"></i> History
+        </button>
+        <button class="btn btn-ghost" id="delete-account-btn" title="Delete Account">
+          <i data-lucide="trash-2" class="icon-sm" style="color:var(--color-danger, #ef4444)"></i>
+        </button>
+        <button class="btn btn-ghost" id="logout-btn" title="Log Out">
+          <i data-lucide="log-out" class="icon-sm"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ── Hero ── -->
+      <section class="hero-section">
+        <div class="hero-badge scroll-reveal fade-down"><i data-lucide="cpu" class="icon-sm"></i> Deep Learning Model: Llama 3.3 70B</div>
+        <h2 class="hero-title scroll-reveal fade-up">
+          <span class="typing-container" id="typewriter"></span><span class="typing-cursor">_</span>
+        </h2>
+        <p class="hero-subtitle scroll-reveal fade-up delay-1">Engineered to deconstruct text contextually. We separate human authenticity from neural network synthesis.</p>
+        
+        <div class="live-stats scroll-reveal fade-up delay-2">
+          <div class="stat-item">
+            <h3 class="stat-number" data-target="1500000">0</h3>
+            <p>Scans Performed</p>
+          </div>
+          <div class="stat-item">
+            <h3 class="stat-number" data-target="99.8">0</h3>
+            <p>Confidence (%)</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Dynamic AI Status Bar ── -->
+      <div id="ai-status-bar" class="ai-status-bar state-idle">
+        <div class="status-indicator">
+          <div class="pulse-ring"></div>
+          <div class="pulse-core"></div>
+        </div>
+        <span id="ai-status-text">AI Detection Engine Ready &bull; Paste or Upload Your Content</span>
+      </div>
+
+      <!-- ── The Workspace ── -->
+      <div class="workspace scroll-reveal scale-up">
+        
+        <!-- Input Panel -->
+        <section class="panel input-panel glass-panel" id="input-section">
+          <div class="panel-header">
+            <h3><i data-lucide="terminal" class="icon-md"></i> Core Input</h3>
+            <span class="char-count" id="char-count">0 / 5000 chars</span>
+          </div>
+          <div class="editor-container" id="drop-zone">
+            <div class="drop-overlay hidden" id="drop-overlay">
+              <i data-lucide="upload-cloud" class="upload-icon"></i>
+              <span>Drop text file to import</span>
+            </div>
+            <textarea
+              id="main-textarea"
+              placeholder="Paste text or drag & drop a file to initiate neural scan..."
+              maxlength="5000"
+            ></textarea>
+          </div>
+          <div class="panel-footer">
+            <!-- Hidden real file input -->
+            <input type="file" id="file-input" accept=".txt,.pdf,.docx" style="display:none">
+            <button id="upload-file-btn" class="btn btn-ghost" title="Upload .txt, .pdf, or .docx">
+              <i data-lucide="upload" class="icon-sm"></i> Upload File
+            </button>
+            <button id="scan-btn" class="btn btn-primary glowing-btn" disabled>
+              <i data-lucide="fingerprint" class="icon-md"></i> Authenticate Text
+            </button>
+          </div>
+        </section>
+
+        <!-- Loading Panel -->
+        <section class="panel loading-panel glass-panel hidden" id="loading-section">
+          <div class="laser-scanner">
+            <div class="laser-beam"></div>
+            <div class="scanner-hologram">
+              <span>01001000 01110101 01101101 01100001 01101110</span>
+              <span>Deconstructing syntactic vectors...</span>
+              <span>Mapping semantic probabilities...</span>
+            </div>
+          </div>
+          <h3 class="scan-text">Executing Groq Neural Analysis...</h3>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="loading-progress"></div>
+          </div>
+        </section>
+
+        <!-- Results Panel -->
+        <section class="panel results-panel glass-panel hidden" id="results-section">
+          <div class="panel-header">
+            <h3><i data-lucide="git-commit" class="icon-md"></i> Analysis Vectors</h3>
+            <div class="header-right-group">
+              <div class="info-tooltip">
+                <i data-lucide="info" class="icon-sm tooltip-trigger"></i>
+                <div class="tooltip-body">
+                  <strong>How does this work?</strong><br>
+                  This analysis is based on observable linguistic patterns: sentence length variation, lexical diversity, repetition, and structural uniformity. It does <em>not</em> search a plagiarism database. Results are analytical suggestions — not definitive verdicts.
+                </div>
+              </div>
+              <button id="export-btn" class="btn btn-ghost" title="Export Report">
+                <i data-lucide="download" class="icon-sm"></i> Export
+              </button>
+              <button id="new-scan-btn" class="btn btn-outline">
+                <i data-lucide="rotate-ccw" class="icon-sm"></i> Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Low Confidence Warning (shown conditionally) -->
+          <div class="low-confidence-warning hidden" id="low-confidence-warning">
+            <i data-lucide="alert-circle" class="icon-sm"></i>
+            <span>Results may not be reliable due to limited input size. Provide more text for higher confidence.</span>
+          </div>
+
+          <!-- Circular Score Cards -->
+          <div class="scores-container" id="scores-container">
+
+            <div class="score-card ai-score">
+              <div class="score-circle" id="ai-circle" style="--prog: 0%; --circle-color: var(--color-ai);">
+                <span class="score-value" id="ai-score-value">0%</span>
+              </div>
+              <div class="score-details">
+                <h4>AI Generated</h4>
+                <p>Probability of AI authorship</p>
+              </div>
+            </div>
+
+            <div class="score-card plag-score">
+              <div class="score-circle" id="plag-circle" style="--prog: 0%; --circle-color: var(--color-plag);">
+                <span class="score-value" id="plag-score-value">0%</span>
+              </div>
+              <div class="score-details">
+                <h4>Plagiarism Match</h4>
+                <p>Matched with external sources</p>
+              </div>
+            </div>
+
+            <div class="score-card overlap-score">
+              <div class="score-circle" id="overlap-circle" style="--prog: 0%; --circle-color: var(--color-overall);">
+                <span class="score-value" id="overlap-score-value">0%</span>
+              </div>
+              <div class="score-details">
+                <h4>Source Overlap</h4>
+                <p>Similarity across indexed data</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Explanation Box -->
+          <div class="summary-box">
+            <i data-lucide="zap" class="icon-sm"></i>
+            <p id="ai-summary">The analysis suggests this content requires further evaluation.</p>
+          </div>
+
+          <!-- Disclaimer -->
+          <p class="results-disclaimer">
+            <i data-lucide="shield" class="icon-sm"></i>
+            This analysis identifies <em>possible</em> patterns consistent with AI writing. It is not a definitive verdict. Always apply human judgement.
+          </p>
+
+          <!-- Highlighted Breakdown -->
+          <div class="highlight-container">
+            <h4>Sentence Topography</h4>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch ai-swatch"></span> AI Traces</span>
+              <span class="legend-item"><span class="swatch plag-swatch"></span> Uncertain</span>
+              <span class="legend-item"><span class="swatch orig-swatch"></span> Authentic</span>
+            </div>
+            <div class="highlighted-text" id="highlighted-text-output"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── Features Asymmetric Grid ── -->
+      <section class="features-section scroll-reveal fade-up-twist">
+        <h2 class="section-title">Beyond Basic Matching</h2>
+        <div class="features-grid">
+          <div class="feature-card f-card-1 glass-panel">
+            <i data-lucide="layers" class="f-icon"></i>
+            <h3>Deep Contextual Analysis</h3>
+            <p>We don't just look for word matches. We analyze sentence structure, burstiness, and perplexing patterns.</p>
+          </div>
+          <div class="feature-card f-card-2 glass-panel">
+            <i data-lucide="globe" class="f-icon"></i>
+            <h3>Cross-Corpus Search</h3>
+            <p>Real-time indexing against billions of webpages and academic journals to find exact and fuzzy matches.</p>
+          </div>
+          <div class="feature-card f-card-3 glass-panel">
+            <i data-lucide="bot" class="f-icon"></i>
+            <h3>LLM Generation Detection</h3>
+            <p>Our model is trained to recognize the signature statistical markers left behind by GPT-4, Llama 3, and Claude.</p>
+          </div>
+        </div>
+      </section>
+
+
+    </main>
+
+    <footer class="app-footer glass-panel">
+      <div class="footer-content">
+        <div class="brand">
+          <i data-lucide="activity" class="icon-sm"></i> Veritas AI Core
+        </div>
+        <p>A demonstration of modern asynchronous AI interfaces.</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ── Scan History Modal ── -->
+  <div class="modal-overlay hidden" id="history-modal">
+    <div class="modal-panel glass-panel">
+      <div class="modal-header">
+        <h3><i data-lucide="clock" class="icon-md"></i> Scan History</h3>
+        <button class="modal-close" id="history-close"><i data-lucide="x" class="icon-sm"></i></button>
+      </div>
+      <div class="modal-body" id="history-list">
+        <div class="history-empty" id="history-empty">
+          <i data-lucide="inbox"></i>
+          <p>No scans yet. Run your first analysis to see history here.</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="clear-history-btn">Clear All History</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete Account Modal ── -->
+  <div class="modal-overlay hidden" id="delete-modal">
+    <div class="modal-panel glass-panel" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3 style="color:var(--color-danger, #ef4444)"><i data-lucide="alert-triangle" class="icon-md"></i> Delete Account</h3>
+        <button class="modal-close" id="delete-modal-close"><i data-lucide="x" class="icon-sm"></i></button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:15px; color:#fff;">Are you sure you want to delete your account? This action is irreversible. All your scan history and user data will be permanently erased.</p>
+        <form id="delete-account-form">
+          <div class="input-group" style="margin-bottom:10px;">
+            <i data-lucide="lock" class="input-icon"></i>
+            <input type="password" id="delete-password-input" placeholder="Confirm your password" required />
+          </div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Type <strong>DELETE</strong> to confirm:</p>
+          <div class="input-group">
+            <i data-lucide="terminal" class="input-icon"></i>
+            <input type="text" id="delete-confirm-input" placeholder="DELETE" required pattern="DELETE" />
+          </div>
+          <div class="modal-footer" style="padding:15px 0 0 0; margin-top:20px;">
+            <button type="submit" class="btn btn-primary glowing-btn" style="background:var(--color-danger, #ef4444); border-color:var(--color-danger, #ef4444); width:100%;" id="submit-delete-btn">
+              Permanently Delete
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scripts ── -->
+  <script src="/firebase-env.js"></script>
+  <script type="module" src="firebase-config.js"></script>
+  <script src="app.js"></script>
+  <script>lucide.createIcons();</script>
+</body>
+</html>
