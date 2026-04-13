@@ -1326,6 +1326,11 @@ body.user-logged-in #logout-btn {
   pointer-events: auto;
 }
 
+/* Email containers - always visible since tabs are removed */
+.email-container {
+  display: block !important;
+}
+
 /* Secondary Button / Method Selectors */
 .auth-method-btn {
   width: 100%;

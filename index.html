@@ -43,10 +43,7 @@
         <button class="btn btn-ghost" id="history-btn" title="Scan History">
           <i data-lucide="clock" class="icon-sm"></i> History
         </button>
-        <button class="btn btn-ghost" id="delete-account-btn" title="Delete Account">
-          <i data-lucide="trash-2" class="icon-sm" style="color:var(--color-danger, #ef4444)"></i>
-        </button>
-        <button class="btn btn-ghost" id="logout-btn" title="Log Out">
+                <button class="btn btn-ghost" id="logout-btn" title="Log Out">
           <i data-lucide="log-out" class="icon-sm"></i>
         </button>
       </div>
@@ -89,7 +86,7 @@
         <!-- Input Panel -->
         <section class="panel input-panel glass-panel" id="input-section">
           <div class="panel-header">
-            <h3><i data-lucide="terminal" class="icon-md"></i> Core Input</h3>
+            <h3><i data-lucide="file-text" class="icon-md"></i> Text Input</h3>
             <span class="char-count" id="char-count">0 / 5000 chars</span>
           </div>
           <div class="editor-container" id="drop-zone">
@@ -97,11 +94,13 @@
               <i data-lucide="upload-cloud" class="upload-icon"></i>
               <span>Drop text file to import</span>
             </div>
-            <textarea
+            <input
+              type="text"
               id="main-textarea"
-              placeholder="Paste text or drag & drop a file to initiate neural scan..."
+              placeholder="Enter your text to analyze..."
               maxlength="5000"
-            ></textarea>
+              style="width: 100%; height: 200px; padding: 12px; background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 8px; color: var(--text-main); font-family: inherit; font-size: 1rem; resize: vertical;"
+            />
           </div>
           <div class="panel-footer">
             <!-- Hidden real file input -->
@@ -273,35 +272,7 @@
     </div>
   </div>
 
-  <!-- ── Delete Account Modal ── -->
-  <div class="modal-overlay hidden" id="delete-modal">
-    <div class="modal-panel glass-panel" style="max-width: 400px;">
-      <div class="modal-header">
-        <h3 style="color:var(--color-danger, #ef4444)"><i data-lucide="alert-triangle" class="icon-md"></i> Delete Account</h3>
-        <button class="modal-close" id="delete-modal-close"><i data-lucide="x" class="icon-sm"></i></button>
-      </div>
-      <div class="modal-body">
-        <p style="margin-bottom:15px; color:#fff;">Are you sure you want to delete your account? This action is irreversible. All your scan history and user data will be permanently erased.</p>
-        <form id="delete-account-form">
-          <div class="input-group" style="margin-bottom:10px;">
-            <i data-lucide="lock" class="input-icon"></i>
-            <input type="password" id="delete-password-input" placeholder="Confirm your password" required />
-          </div>
-          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Type <strong>DELETE</strong> to confirm:</p>
-          <div class="input-group">
-            <i data-lucide="terminal" class="input-icon"></i>
-            <input type="text" id="delete-confirm-input" placeholder="DELETE" required pattern="DELETE" />
-          </div>
-          <div class="modal-footer" style="padding:15px 0 0 0; margin-top:20px;">
-            <button type="submit" class="btn btn-primary glowing-btn" style="background:var(--color-danger, #ef4444); border-color:var(--color-danger, #ef4444); width:100%;" id="submit-delete-btn">
-              Permanently Delete
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
+  
   <!-- ── Scripts ── -->
   <script src="/firebase-env.js"></script>
   <script type="module" src="firebase-config.js"></script>

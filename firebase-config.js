@@ -59,8 +59,8 @@ function setupRouteGuards() {
   const isAuthPage = window.location.pathname.endsWith('auth.html');
   
   onAuthStateChanged(auth, (user) => {
-    // A user is "authenticated" if they have a verified email OR if they signed in via Phone (which is inherently verified)
-    const isVerified = user && (user.emailVerified || user.phoneNumber);
+    // A user is "authenticated" if they are logged in (email verification is now optional)
+    const isVerified = user;
     
     if (user && isVerified) {
       console.log("Logged in user:", user.email);

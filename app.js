@@ -40,17 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const exportBtn      = document.getElementById('export-btn');
   const historyBtn     = document.getElementById('history-btn');
   const logoutBtn      = document.getElementById('logout-btn');
-  const deleteBtn      = document.getElementById('delete-account-btn');
-  const historyModal   = document.getElementById('history-modal');
+    const historyModal   = document.getElementById('history-modal');
   const historyClose   = document.getElementById('history-close');
   const historyList    = document.getElementById('history-list');
   const historyEmpty   = document.getElementById('history-empty');
   const clearHistoryBtn = document.getElementById('clear-history-btn');
   
-  const deleteModal    = document.getElementById('delete-modal');
-  const deleteModalClose = document.getElementById('delete-modal-close');
-  const deleteForm     = document.getElementById('delete-account-form');
-
+  
   // In-memory reference to latest result for export
   let _lastResult = null;
   let _lastText = '';
@@ -66,102 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Delete Modal Visibility Handlers
-  if (deleteBtn) {
-    deleteBtn.addEventListener('click', () => deleteModal.classList.remove('hidden'));
-  }
-  if (deleteModalClose) {
-    deleteModalClose.addEventListener('click', () => deleteModal.classList.add('hidden'));
-  }
-  if (deleteModal) {
-    deleteModal.addEventListener('click', (e) => {
-      if (e.target === deleteModal) deleteModal.classList.add('hidden');
-    });
-  }
-
-  // Account Deletion Flow
-  if (deleteForm) {
-    deleteForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const pwInput = document.getElementById('delete-password-input').value;
-      const confirmInput = document.getElementById('delete-confirm-input').value;
-      const submitBtn = document.getElementById('submit-delete-btn');
-
-      if (confirmInput !== 'DELETE') {
-        alert('Please strictly type DELETE to confirm.');
-        return;
-      }
-
-      const user = window.fbAuth?.currentUser;
-      if (!user) return;
-
-      const originalHtml = submitBtn.innerHTML;
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i data-lucide="loader" class="icon-sm spin-icon"></i> Deleting...';
-      lucide.createIcons();
-
-      try {
-        const { 
-          EmailAuthProvider, 
-          reauthenticateWithCredential, 
-          deleteDoc, 
-          doc, 
-          collection, 
-          query, 
-          where, 
-          getDocs,
-          deleteUser
-        } = window.fbMethods;
-        const db = window.fbDb;
-
-        // 1. Re-authenticate
-        const credential = EmailAuthProvider.credential(user.email, pwInput);
-        await reauthenticateWithCredential(user, credential);
-
-        // 2. Delete Firestore data (Scans History)
-        const q = query(collection(db, "scans"), where("uid", "==", user.uid));
-        const snapshots = await getDocs(q);
-        const deletePromises = [];
-        snapshots.forEach((document) => {
-          deletePromises.push(deleteDoc(doc(db, "scans", document.id)));
-        });
-        await Promise.all(deletePromises);
-
-        // 3. Delete Firestore Auth Profile
-        await deleteDoc(doc(db, "users", user.uid));
-
-        // 4. Hit Backend Endpoint
-        try {
-          const token = await user.getIdToken();
-          await fetch(`${API_BASE_URL}/delete-user`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-        } catch(e) {
-          console.warn("Backend deletion hook execution finished.");
-        }
-
-        // 5. Delete Firebase Auth User
-        // Because deleteUser automatically invalidates sessions, 
-        // the AuthState observer route guard immediately kicks them to auth.html.
-        await deleteUser(user);
-
-        alert('Your account and all associated data have been successfully deleted.');
-
-      } catch (err) {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalHtml;
-        lucide.createIcons();
-
-        if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
-          alert('Incorrect password. Please try again.');
-        } else {
-          alert(err.message.replace('Firebase:', '').trim());
-        }
-      }
-    });
-  }
-
+    
   // Check server health on load
   checkHealth();
 

@@ -34,12 +34,8 @@
              <h3 style="font-family:'Outfit', sans-serif;">Welcome Back</h3>
           </div>
           
-          <div class="auth-tab-group">
-            <div class="auth-tab active" data-target="login-email-container">Email</div>
-            <div class="auth-tab" data-target="login-phone-container">Phone</div>
-          </div>
-
-          <div id="login-email-container">
+          
+          <div id="login-email-container" class="email-container">
             <form id="login-form">
               <div class="input-group">
                 <i data-lucide="mail" class="input-icon"></i>
@@ -57,20 +53,7 @@
             </form>
           </div>
 
-          <div id="login-phone-container" class="hidden">
-            <form id="login-phone-form">
-              <div class="input-group phone-number-wrapper">
-                <i data-lucide="globe" class="phone-icon"></i>
-                <input type="text" id="login-country-code" class="country-code-input" value="+1" required placeholder="+1" />
-                <input type="tel" id="login-phone" class="phone-input" placeholder="Phone Number" required />
-              </div>
-              <button type="submit" class="btn btn-primary glowing-btn auth-submit-btn" id="login-phone-submit">
-                <span>Send SMS Code</span>
-                <i data-lucide="message-square" class="icon-sm"></i>
-              </button>
-            </form>
-          </div>
-
+          
           <div class="auth-switch">
             Don't have an account? <a href="#" id="goto-signup">Sign Up</a>
           </div>
@@ -82,12 +65,8 @@
             <h3 style="font-family:'Outfit', sans-serif;">Create Account</h3>
           </div>
           
-          <div class="auth-tab-group">
-            <div class="auth-tab active" data-target="signup-email-container">Email</div>
-            <div class="auth-tab" data-target="signup-phone-container">Phone</div>
-          </div>
-
-          <div id="signup-email-container">
+          
+          <div id="signup-email-container" class="email-container">
             <form id="signup-form">
               <div class="input-group">
                 <i data-lucide="user" class="input-icon"></i>
@@ -129,28 +108,12 @@
             </button>
           </div>
 
-          <div id="signup-phone-container" class="hidden">
-            <form id="signup-phone-form">
-              <div class="input-group">
-                <i data-lucide="user" class="input-icon"></i>
-                <input type="text" id="signup-phone-name" placeholder="Full Name" required autocomplete="name" />
-              </div>
-              <div class="input-group phone-number-wrapper">
-                <i data-lucide="globe" class="phone-icon"></i>
-                <input type="text" id="signup-country-code" class="country-code-input" value="+1" required placeholder="+1" />
-                <input type="tel" id="signup-phone" class="phone-input" placeholder="Phone Number" required />
-              </div>
-              <button type="submit" class="btn btn-primary glowing-btn auth-submit-btn" id="signup-phone-submit">
-                <span>Send SMS Code</span>
-                <i data-lucide="message-square" class="icon-sm"></i>
-              </button>
-            </form>
-          </div>
-          
+                    
           <div class="auth-switch">
             Already have an account? <a href="#" id="goto-login">Log In</a>
           </div>
-        </div>
+          
+                  </div>
 
         <!-- SET PASSWORD AFTER GOOGLE SIGNUP -->
         <div class="auth-step" id="step-google-password">
@@ -186,26 +149,7 @@
           </form>
         </div>
 
-        <!-- PHONE OTP VERIFICATION STEP -->
-        <div class="auth-step" id="step-phone-otp">
-          <div class="step-header" style="text-align:center; padding-bottom:10px;">
-            <button class="back-btn" id="back-to-phone-btn"><i data-lucide="arrow-left" class="icon-sm"></i></button>
-            <h3 style="font-family:'Outfit', sans-serif; flex:1; text-align:center;">Enter Code</h3>
-          </div>
-          <p style="text-align:center; color:var(--text-muted); font-size:0.9rem; margin-bottom:20px;">
-            We sent a verification code to your phone.
-          </p>
-          <form id="phone-otp-form">
-            <div class="input-group" style="margin-bottom: 24px;">
-              <input type="text" id="otp-input" placeholder="••••••" required maxlength="6" pattern="\d{6}" style="text-align:center; font-weight:700; font-size: 1.25rem; letter-spacing: 0.5rem;" />
-            </div>
-            <button type="submit" class="btn btn-primary glowing-btn auth-submit-btn" id="otp-submit">
-              <span>Verify & Continue</span>
-              <i data-lucide="check-circle" class="icon-sm"></i>
-            </button>
-          </form>
-        </div>
-
+        
       </div>
     </div>
   </div>
@@ -230,9 +174,7 @@
         sendEmailVerification,
         signOut,
         setDoc,
-        doc,
-        RecaptchaVerifier,
-        signInWithPhoneNumber
+        doc
       } = window.fbMethods;
       const db = window.fbDb;
       
@@ -242,13 +184,11 @@
       const stepLogin = document.getElementById('step-login');
       const stepSignup = document.getElementById('step-signup');
       const stepGooglePassword = document.getElementById('step-google-password');
-      const stepPhoneOtp = document.getElementById('step-phone-otp');
       
       function navigateTo(target) {
         stepLogin.classList.remove('active-step');
         stepSignup.classList.remove('active-step');
         if(stepGooglePassword) stepGooglePassword.classList.remove('active-step');
-        if(stepPhoneOtp) stepPhoneOtp.classList.remove('active-step');
         
         target.classList.add('active-step');
         lucide.createIcons();
@@ -304,155 +244,8 @@
       document.getElementById('goto-signup').addEventListener('click', (e) => { e.preventDefault(); navigateTo(stepSignup); });
       document.getElementById('goto-login').addEventListener('click', (e) => { e.preventDefault(); navigateTo(stepLogin); });
 
-      // Tab Toggling
-      document.querySelectorAll('.auth-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-          const parent = tab.parentElement;
-          parent.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          const targetId = tab.getAttribute('data-target');
-          if(targetId.startsWith('login')) {
-            document.getElementById('login-email-container').classList.add('hidden');
-            document.getElementById('login-phone-container').classList.add('hidden');
-          } else {
-            document.getElementById('signup-email-container').classList.add('hidden');
-            document.getElementById('signup-phone-container').classList.add('hidden');
-          }
-          document.getElementById(targetId).classList.remove('hidden');
-        });
-      });
-
-      // --- PHONE AUTH STATE ---
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response) => {
-          // reCAPTCHA solved
-        }
-      });
-      window.phoneAuthMode = 'login';
-      window.tempSignupName = '';
-
-      // --- PHONE LOGIN ---
-      document.getElementById('login-phone-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const code = document.getElementById('login-country-code').value.trim();
-        const num = document.getElementById('login-phone').value.trim();
-        const fullNumber = code + num;
-        const btn = document.getElementById('login-phone-submit');
-        const ogHtml = btn.innerHTML;
-        
-        setLoading(btn, true, ogHtml);
-        
-        try {
-          window.suppressAuthRedirect = true; // Prevent premature redirect
-          if (!window.recaptchaVerifier) {
-             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-          }
-          window.confirmationResult = await signInWithPhoneNumber(auth, fullNumber, window.recaptchaVerifier);
-          window.phoneAuthMode = 'login';
-          navigateTo(stepPhoneOtp);
-          showToast('Verification code sent!', 'success');
-        } catch (err) {
-          console.error("Phone login failed:", err);
-          showToast(err.message.replace('Firebase:', '').trim());
-          if (window.recaptchaVerifier) {
-            try {
-              window.recaptchaVerifier.render().then(widgetId => {
-                if (typeof grecaptcha !== 'undefined') grecaptcha.reset(widgetId);
-              }).catch(() => {});
-            } catch(reErr) {}
-          }
-        } finally {
-          setLoading(btn, false, ogHtml);
-        }
-      });
-
-      // --- PHONE SIGNUP ---
-      document.getElementById('signup-phone-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        window.tempSignupName = document.getElementById('signup-phone-name').value.trim();
-        const code = document.getElementById('signup-country-code').value.trim();
-        const num = document.getElementById('signup-phone').value.trim();
-        const fullNumber = code + num;
-        
-        const btn = document.getElementById('signup-phone-submit');
-        const ogHtml = btn.innerHTML;
-        
-        setLoading(btn, true, ogHtml);
-        
-        try {
-          window.suppressAuthRedirect = true;
-          if (!window.recaptchaVerifier) {
-             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-          }
-          window.confirmationResult = await signInWithPhoneNumber(auth, fullNumber, window.recaptchaVerifier);
-          window.phoneAuthMode = 'signup';
-          navigateTo(stepPhoneOtp);
-          showToast('Verification code sent!', 'success');
-        } catch (err) {
-          console.error("Phone signup failed:", err);
-          showToast(err.message.replace('Firebase:', '').trim());
-          if (window.recaptchaVerifier) {
-            try {
-              window.recaptchaVerifier.render().then(widgetId => {
-                if (typeof grecaptcha !== 'undefined') grecaptcha.reset(widgetId);
-              }).catch(() => {});
-            } catch(reErr) {}
-          }
-        } finally {
-          setLoading(btn, false, ogHtml);
-        }
-      });
-
-      // --- OTP VERIFICATION ---
-      document.getElementById('phone-otp-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const code = document.getElementById('otp-input').value.trim();
-        const btn = document.getElementById('otp-submit');
-        const ogHtml = btn.innerHTML;
-        setLoading(btn, true, ogHtml);
-        
-        try {
-          console.log("Verifying code...");
-          const cred = await window.confirmationResult.confirm(code);
-          const user = cred.user;
-          console.log("OTP confirmed for user:", user.uid);
-          
-          if (window.phoneAuthMode === 'signup' && window.tempSignupName) {
-             try {
-               await updateProfile(user, { displayName: window.tempSignupName });
-             } catch(upErr) { console.error("Update profile failed:", upErr); }
-             
-             try {
-               await saveUserProfile(user, 'phone');
-             } catch(savErr) { console.error("Save profile failed:", savErr); }
-          }
-          
-          showToast('Authentication Successful!', 'success');
-          
-          // Clear "Processing" state before navigating
-          setLoading(btn, false, ogHtml);
-          
-          window.suppressAuthRedirect = false;
-          setTimeout(() => {
-             window.location.href = "index.html";
-          }, 500);
-          
-          return; // Exit successfully
-        } catch (err) {
-          console.error("OTP verification failed:", err);
-          showToast(err.message.replace('Firebase:', '').trim());
-        } finally {
-          // Double check the spinner is off if we haven't successfully returned
-          setLoading(btn, false, ogHtml);
-        }
-      });
       
-      document.getElementById('back-to-phone-btn').addEventListener('click', (e) => {
-        e.preventDefault();
-        navigateTo(window.phoneAuthMode === 'login' ? stepLogin : stepSignup);
-      });
-
+      
       // --- EMAIL LOGIN FORM ---
       document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -462,17 +255,16 @@
         try {
           const userCredential = await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value);
           
-          if (!userCredential.user.emailVerified) {
-            // Unverified email. Prevent login logic
-            await signOut(auth);
-            throw new Error("Please verify your email before logging in.");
-          }
+          // Email verification is now optional - allow login without verification
+          console.log("User logged in successfully:", userCredential.user.email);
           
           showToast('Login successful.', 'success');
           // Route guard in firebase-config.js will auto-redirect
         } catch (err) {
           setLoading(btn, false, ogHtml);
-          showToast(err.message.replace('Firebase:', '').trim());
+          let errorMessage = err.message.replace('Firebase:', '').trim();
+          
+          showToast(errorMessage);
         }
       });
 
@@ -495,32 +287,87 @@
         const ogHtml = btn.innerHTML;
         setLoading(btn, true, ogHtml);
         
+        // Emergency fallback - force reset after 20 seconds
+        const emergencyReset = setTimeout(() => {
+          console.warn("Emergency reset triggered");
+          setLoading(btn, false, ogHtml);
+          showToast("Signup is taking too long. Please try again.", "error");
+        }, 20000);
+        
         try {
-          const cred = await createUserWithEmailAndPassword(auth, email, p1);
-          await updateProfile(cred.user, { displayName: name });
+          console.log("Starting signup process...");
           
-          // Save profile to database
-          await saveUserProfile(cred.user, 'password');
-
-          await sendEmailVerification(cred.user);
+          // Create user with timeout
+          const createUserPromise = createUserWithEmailAndPassword(auth, email, p1);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Signup timeout')), 15000)
+          );
           
-          // Force signout so they wait and click link in their email
-          await signOut(auth);
+          const cred = await Promise.race([createUserPromise, timeoutPromise]);
+          console.log("User created successfully:", cred.user.uid);
           
-          showToast("Signup successful! Please verify your email before logging in.", "success");
+          // Update profile (with timeout)
+          try {
+            const updatePromise = updateProfile(cred.user, { displayName: name });
+            await Promise.race([updatePromise, new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile update timeout')), 5000)
+            )]);
+            console.log("Profile updated with name");
+          } catch (profileErr) {
+            console.warn("Profile update failed:", profileErr);
+            // Continue anyway - not critical
+          }
           
-          // clear forms
+          // Send email verification (optional - non-blocking)
+          try {
+            const emailPromise = sendEmailVerification(cred.user);
+            await Promise.race([emailPromise, new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Email verification timeout')), 3000)
+            )]);
+            console.log("Email verification sent");
+            showToast("Signup successful! Verification email sent (optional).", "success");
+          } catch (emailErr) {
+            console.warn("Email verification failed:", emailErr);
+            // Continue anyway - user can still login immediately
+            showToast("Signup successful! You can now log in.", "success");
+          }
+          
+          // Clear forms
           document.getElementById('signup-form').reset();
           document.getElementById('login-form').reset();
           
-          navigateTo(stepLogin);
+          // Clear emergency timeout
+          clearTimeout(emergencyReset);
+          
+          // Navigate to login immediately
+          setTimeout(() => {
+            navigateTo(stepLogin);
+          }, 1500);
+          
         } catch (err) {
-          showToast(err.message.replace('Firebase:', '').trim());
+          console.error("Signup error:", err);
+          let errorMessage = err.message.replace('Firebase:', '').trim();
+          
+          // Handle specific errors
+          if (errorMessage.includes('email-already-in-use')) {
+            errorMessage = "This email is already registered. Please log in instead.";
+          } else if (errorMessage.includes('weak-password')) {
+            errorMessage = "Password is too weak. Please choose a stronger password.";
+          } else if (errorMessage.includes('invalid-email')) {
+            errorMessage = "Please enter a valid email address.";
+          } else if (errorMessage.includes('timeout')) {
+            errorMessage = "Signup took too long. Please try again.";
+          }
+          
+          showToast(errorMessage);
         } finally {
+          // Clear emergency timeout
+          clearTimeout(emergencyReset);
           setLoading(btn, false, ogHtml);
         }
       });
 
+      
       // --- GOOGLE SIGNUP FORM ---
       document.getElementById('google-signup-btn').addEventListener('click', async () => {
         const btn = document.getElementById('google-signup-btn');
@@ -564,12 +411,32 @@
         setLoading(btn, true, ogHtml);
 
         try {
-          // Add password to their Google account!
-          await updatePassword(auth.currentUser, p1);
+          // Add timeout to prevent infinite loading
+          const timeout = setTimeout(() => {
+            console.error("Google password setup timeout");
+            setLoading(btn, false, ogHtml);
+            showToast("Password setup timed out. Please try again.", "error");
+          }, 10000); // 10 second timeout
           
-          // Save to Firestore Database
-          await saveUserProfile(auth.currentUser, 'google');
+          // Add password to their Google account!
+          const updatePromise = updatePassword(auth.currentUser, p1);
+          await Promise.race([updatePromise, new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Password update timeout')), 8000)
+          )]);
+          
+          // Save to Firestore Database (optional)
+          try {
+            const savePromise = saveUserProfile(auth.currentUser, 'google');
+            await Promise.race([savePromise, new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Database save timeout')), 5000)
+            )]);
+          } catch (dbErr) {
+            console.warn("Database save failed:", dbErr);
+            // Continue anyway - not critical
+          }
 
+          clearTimeout(timeout);
+          
           showToast('Account setup complete! Redirecting...', 'success');
           window.suppressAuthRedirect = false; // allow redirect
           
@@ -577,8 +444,16 @@
              window.location.href = "index.html";
           }, 800);
         } catch (err) {
+          console.error("Google password setup error:", err);
+          let errorMessage = err.message.replace("Firebase:", "").trim();
+          
+          if (errorMessage.includes('timeout')) {
+            errorMessage = "Password setup took too long. Please try again.";
+          }
+          
+          showToast(errorMessage);
+        } finally {
           setLoading(btn, false, ogHtml);
-          showToast(err.message.replace("Firebase:", "").trim());
         }
       });
 
